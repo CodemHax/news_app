@@ -1,16 +1,91 @@
-# news_app
+# News App
 
-A new Flutter project.
+A simple, clean Flutter application for reading the latest news articles from various sources.
+
+## Features
+
+- **Clean UI**: Simple and easy-to-use interface
+- **Latest News**: Fetches trending news from various sources
+- **Offline Detection**: Alerts users when no internet connection is available
+- **Detail View**: Read full articles with a clean reading experience
+- **External Links**: Open original sources in your browser
+
+## Screenshots
+
+*Add your app screenshots here*
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Prerequisites
 
-A few resources to get you started if this is your first Flutter project:
+- Flutter (2.0 or later)
+- Dart (2.12 or later)
+- Android Studio / VS Code
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Installation
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. Clone this repository:
+   ```
+   git clone https://github.com/codemhax/news_app.git
+   ```
+
+2. Navigate to the project directory:
+   ```
+   cd news_app
+   ```
+
+3. Install dependencies:
+   ```
+   flutter pub get
+   ```
+
+4. Run the app:
+   ```
+   flutter run
+   ```
+
+## Dependencies
+
+- [connectivity_plus](https://pub.dev/packages/connectivity_plus): For checking internet connectivity
+- [fluttertoast](https://pub.dev/packages/fluttertoast): For displaying toast messages
+- [permission_handler](https://pub.dev/packages/permission_handler): For handling permissions
+- [url_launcher](https://pub.dev/packages/url_launcher): For launching URLs in browser
+
+## Project Structure
+
+```
+lib/
+├── main.dart                # App entry point and main screen
+├── Ferc/
+│   └── get_news.dart        # News API integration
+└── screen/
+    └── detail_news.dart     # News detail screen
+```
+
+## Usage
+
+- **Browse News**: Scroll through the list of trending news articles on the main screen
+- **Read Article**: Tap on any article to view its full content
+- **Open Source**: In the detail view, tap "Read full article" to open the original source in your browser
+- **Refresh News**: Pull down to refresh or tap the refresh button in the app bar to get the latest news
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- News data provided by [News API](https://github.com/CodemHax/InShort-News-Api)
+- Icons made by [Freepik](https://www.flaticon.com/authors/freepik) from [Flaticon](https://www.flaticon.com/)
+
+---
+
+Made with ❤️ using Flutter
