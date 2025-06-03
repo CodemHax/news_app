@@ -1,18 +1,13 @@
 # News App
 
-A simple, clean Flutter application for reading the latest news articles from various sources.
+A simple, clean Flutter application for reading the latest news articles.
 
 ## Features
 
 - **Clean UI**: Simple and easy-to-use interface
 - **Latest News**: Fetches trending news from various sources
-- **Offline Detection**: Alerts users when no internet connection is available
 - **Detail View**: Read full articles with a clean reading experience
 - **External Links**: Open original sources in your browser
-
-## Screenshots
-
-*Add your app screenshots here*
 
 ## Getting Started
 
