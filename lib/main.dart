@@ -4,6 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'screen/detail_news.dart';
 import 'Ferc/get_news.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'dart:io';
 
 void requestNotificationPermission() async {
   try {
@@ -16,9 +17,19 @@ void requestNotificationPermission() async {
 }
 
 Future<bool> isConnected() async {
-  return Connectivity().checkConnectivity().then((result) {
-    return result != ConnectivityResult.none;
-  });
+  var connectivityResult = await Connectivity().checkConnectivity();
+
+  if (connectivityResult == ConnectivityResult.none) {
+    return false;
+  }
+
+  // Additional check by attempting to reach a reliable server
+  try {
+    final result = await InternetAddress.lookup('google.com');
+    return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+  } on SocketException catch (_) {
+    return false;
+  }
 }
 
 void main() async {

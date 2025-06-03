@@ -75,20 +75,36 @@ class DetailNews extends StatelessWidget {
                       onTap: () async {
                         try {
                           final uri = Uri.parse(source!);
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(
+
+                          bool launched = await launchUrl(
+                            uri,
+                            mode: LaunchMode.inAppWebView,
+                            webViewConfiguration: const WebViewConfiguration(
+                              enableJavaScript: true,
+                              enableDomStorage: true,
+                            ),
+                          );
+
+                          if (!launched) {
+                            launched = await launchUrl(
                               uri,
                               mode: LaunchMode.externalApplication,
                             );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Could not open link')),
-                            );
+
+                            if (!launched) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Could not open link: $source')),
+                                );
+                              }
+                            }
                           }
                         } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Invalid link')),
-                          );
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error opening link: ${e.toString()}')),
+                            );
+                          }
                         }
                       },
                       child: Container(
