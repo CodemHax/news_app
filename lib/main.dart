@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'screen/detail_news.dart';
-import 'Ferc/get_news.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
+import 'providers/news_provider.dart';
+import 'screen/home_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void requestNotificationPermission() async {
   try {
@@ -22,8 +24,6 @@ Future<bool> isConnected() async {
   if (connectivityResult == ConnectivityResult.none) {
     return false;
   }
-
-  // Additional check by attempting to reach a reliable server
   try {
     final result = await InternetAddress.lookup('google.com');
     return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
@@ -32,185 +32,137 @@ Future<bool> isConnected() async {
   }
 }
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   requestNotificationPermission();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  List<Map<String, dynamic>> articles = [];
-  List<String> verticalItems = ['Loading news...'];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNews();
-  }
-
-  Future<void> _loadNews() async {
-
-    bool isConnectedToInternet = await isConnected();
-
-    if (!isConnectedToInternet) {
-      showToastMessage('No internet connection. Please check your connection.');
-      setState(() {
-        verticalItems = ['No internet connection'];
-      });
-      return;
-    }
-    try {
-      final news = await fetchTrendingNews();
-      setState(() {
-        articles = news;
-        verticalItems = news.map<String>((article) =>
-        article['title'] as String? ?? 'No title').toList();
-        if (verticalItems.isEmpty) {
-          verticalItems = ['No news available'];
-        }
-      });
-    } catch (e, stack) {
-      print('Error loading news: $e\nStacktrace: $stack');
-      setState(() {
-        verticalItems = ['Error loading news'];
-      });
-    }
-  }
-
-  void showToastMessage(String message) {
-    Future.delayed(Duration(milliseconds: 0), () {
-      Fluttertoast.showToast(
-          msg: message,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.black87,
-          textColor: Colors.white,
-          fontSize: 16.0
-      );
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        colorSchemeSeed: Colors.blue,
-        useMaterial3: true,
-      ),
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('News App'),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.refresh),
-              onPressed: _loadNews,
-            ),
-          ],
+    return ChangeNotifierProvider(
+      create: (context) => NewsProvider(),
+      child: MaterialApp(
+        title: 'Inshorts News App',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          primarySwatch: Colors.blue,
+          brightness: Brightness.light,
+          textTheme: GoogleFonts.robotoTextTheme(
+            ThemeData.light().textTheme,
+          ),
+          appBarTheme: const AppBarTheme(
+            elevation: 2,
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black87,
+          ),
         ),
-        body: RefreshIndicator(
-          onRefresh: _loadNews,
-          child: articles.isEmpty
-            ? Center(
-                child: Text(
-                  verticalItems.first,
-                  style: TextStyle(fontSize: 16),
-                ),
-              )
-            : ListView.builder(
-                physics: AlwaysScrollableScrollPhysics(),
-                itemCount: articles.length,
-                padding: EdgeInsets.all(10),
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: EdgeInsets.only(bottom: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        var info = articles[index];
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailNews(
-                              title: info['title'] ?? 'No title',
-                              content: info['content'] ?? 'No content available',
-                              imageUrl: info['imageUrl'],
-                              date: info['date'] ?? 'Unknown date',
-                              time: info['time'] ?? 'Unknown time',
-                              source: info['readMoreUrl'] ?? 'Unknown source',
-                              author: info['author'] ?? 'Unknown author',
-                            ),
-                          ),
-                        );
-                      },
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (articles[index]["imageUrl"] != null && articles[index]["imageUrl"].toString().isNotEmpty)
-                            Image.network(
-                              articles[index]["imageUrl"] ?? '',
-                              height: 180,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                height: 100,
-                                color: Colors.grey.shade200,
-                                child: Icon(Icons.image_not_supported, color: Colors.grey),
-                              ),
-                            ),
-                          Padding(
-                            padding: EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  articles[index]['title'] ?? 'No title',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                SizedBox(height: 6),
-                                Text(
-                                  _getPreviewContent(articles[index]['content']),
-                                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                SizedBox(height: 6),
-                                Text(
-                                  '${articles[index]['date'] ?? 'Unknown date'}',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          brightness: Brightness.dark,
+          primarySwatch: Colors.blue,
+          textTheme: GoogleFonts.robotoTextTheme(
+            ThemeData.dark().textTheme,
+          ),
+          appBarTheme: const AppBarTheme(
+            elevation: 2,
+          ),
+          cardColor: Colors.grey[850],
+        ),
+        themeMode: ThemeMode.system,
+        home: FutureBuilder<bool>(
+          future: isConnected(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasData && !snapshot.data!) {
+                return const NoInternetScreen();
+              }
+              return const HomeScreen();
+            }
+            return const Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
               ),
+            );
+          },
         ),
       ),
     );
   }
+}
 
-  String _getPreviewContent(dynamic content) {
-    if (content == null) return 'No content available';
-    return content.toString().length > 100
-      ? '${content.toString().substring(0, 100)}...'
-      : content.toString();
+class NoInternetScreen extends StatelessWidget {
+  const NoInternetScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.wifi_off,
+                size: 80,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'No Internet Connection',
+                style: GoogleFonts.montserrat(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Please check your internet connection and try again.',
+                style: Theme.of(context).textTheme.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FutureBuilder<bool>(
+                        future: isConnected(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.done) {
+                            if (snapshot.hasData && snapshot.data!) {
+                              return const HomeScreen();
+                            }
+                            return const NoInternetScreen();
+                          }
+                          return const Scaffold(
+                            body: Center(child: CircularProgressIndicator()),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.refresh),
+                label: const Text('Try Again'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
