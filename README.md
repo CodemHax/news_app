@@ -1,5 +1,4 @@
-# News App
-
+# News App 
 A simple, clean Flutter application for reading the latest news articles.
 
 ## Features
