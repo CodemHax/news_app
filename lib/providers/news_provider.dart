@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../Ferc/get_news.dart' as Ferc;
+import '../fetch//get_news.dart' as Ferc;
 import '../models/news_model.dart';
 
 class NewsProvider extends ChangeNotifier {
@@ -53,11 +53,10 @@ class NewsProvider extends ChangeNotifier {
     try {
       final categoriesResponse = await Ferc.fetchCategories();
       List<String> fetchedCategories = categoriesResponse;
-
-      // Filter out problematic categories
+      
       fetchedCategories.removeWhere((cat) => cat.toLowerCase() == 'all');
 
-      // Ensure trending is first
+
       if (!fetchedCategories.contains('trending')) {
         _categories = ['trending', ...fetchedCategories];
       } else {
@@ -69,7 +68,6 @@ class NewsProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print('Error loading categories: $e');
-      // Fallback categories without 'all' and 'health'
       _categories = [
         'trending', 'business', 'sports', 'technology',
         'entertainment', 'science', 'politics', 'world'

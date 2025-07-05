@@ -43,6 +43,9 @@
     <queries>
         <!-- Used by Flutter's WebView -->
         <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+        <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="http" />
         </intent>

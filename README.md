@@ -10,6 +10,7 @@ A modern, feature-rich news application built with Flutter that delivers the lat
 - **Offline Support**: Basic functionality works without an internet connection
 - **Article Details**: View full article details with images
 - **Share Articles**: Easily share interesting news with friends
+- **Text-to-Speech (TTS)**: Listen to article content using built-in TTS
 
 
 ## Tech Stack
@@ -19,6 +20,8 @@ A modern, feature-rich news application built with Flutter that delivers the lat
 - **HTTP**: API integration for fetching news data
 - **URL Launcher**: Opening external links
 - **Permission Handler**: Managing app permissions
+- **Share Plus**: Sharing articles
+- **Flutter TTS**: Text-to-speech for reading articles aloud
 
 
 ## Getting Started

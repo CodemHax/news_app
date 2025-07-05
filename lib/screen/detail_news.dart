@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 
-class DetailNews extends StatelessWidget {
+class DetailNews extends StatefulWidget {
   final String title;
   final String content;
   final String? imageUrl;
@@ -28,6 +29,28 @@ class DetailNews extends StatelessWidget {
   });
 
   @override
+  State<DetailNews> createState() => _DetailNewsState();
+}
+
+class _DetailNewsState extends State<DetailNews> {
+  final FlutterTts flutterTts = FlutterTts();
+
+
+  Future<void> _speak() async {
+    String text = widget.content;
+    if (text.isNotEmpty) {
+      await flutterTts.setLanguage("en-US");
+      await flutterTts.setPitch(1.0);
+      await flutterTts.setSpeechRate(0.5);
+      await flutterTts.speak(text);
+    }
+  }
+  @override
+  void dispose() {
+    flutterTts.stop();
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -37,16 +60,16 @@ class DetailNews extends StatelessWidget {
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              expandedHeight: imageUrl != null ? 250.0 : 0.0,
+              expandedHeight: widget.imageUrl != null ? 250.0 : 0.0,
               pinned: true,
               stretch: true,
-              flexibleSpace: imageUrl != null
+              flexibleSpace: widget.imageUrl != null
                 ? FlexibleSpaceBar(
                     background: Stack(
                       fit: StackFit.expand,
                       children: [
                         CachedNetworkImage(
-                          imageUrl: imageUrl!,
+                          imageUrl: widget.imageUrl!,
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Shimmer.fromColors(
                             baseColor: Colors.grey[300]!,
@@ -88,7 +111,7 @@ class DetailNews extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      widget.title,
                       style: GoogleFonts.roboto(
                         fontSize: 24.0,
                         fontWeight: FontWeight.bold,
@@ -100,7 +123,7 @@ class DetailNews extends StatelessWidget {
 
                     Row(
                       children: [
-                        if (author != null && author!.isNotEmpty)
+                        if (widget.author != null && widget.author!.isNotEmpty)
                           Expanded(
                             child: Row(
                               children: [
@@ -108,7 +131,7 @@ class DetailNews extends StatelessWidget {
                                 SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
-                                    author!,
+                                    widget.author!,
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
@@ -128,7 +151,7 @@ class DetailNews extends StatelessWidget {
                             Icon(Icons.calendar_today, size: 14, color: Colors.grey),
                             SizedBox(width: 4),
                             Text(
-                              date ?? 'Unknown date',
+                              widget.date ?? 'Unknown date',
                               style: TextStyle(fontSize: 14, color: Colors.grey),
                             ),
                           ],
@@ -139,7 +162,7 @@ class DetailNews extends StatelessWidget {
                     Divider(height: 32),
 
                     Text(
-                      content,
+                      widget.content,
                       style: GoogleFonts.roboto(
                         fontSize: 16.0,
                         height: 1.6,
@@ -149,7 +172,7 @@ class DetailNews extends StatelessWidget {
 
                     SizedBox(height: 24),
 
-                    if (source != null && source!.isNotEmpty)
+                    if (widget.source != null && widget.source!.isNotEmpty)
                       Container(
                         decoration: BoxDecoration(
                           color: isDark ? Colors.grey[800] : Colors.blue.shade50,
@@ -171,9 +194,9 @@ class DetailNews extends StatelessWidget {
                             ),
                             SizedBox(height: 8),
                             InkWell(
-                              onTap: () => _launchURL(context, source!),
+                              onTap: () => _launchURL(context, widget.source!),
                               child: Text(
-                                source!,
+                                widget.source!,
                                 style: TextStyle(
                                   color: Colors.blue,
                                   decoration: TextDecoration.underline,
@@ -196,12 +219,12 @@ class DetailNews extends StatelessWidget {
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (source != null && source!.isNotEmpty)
+          if (widget.source != null && widget.source!.isNotEmpty)
             FloatingActionButton.small(
-              heroTag: 'source',
-              onPressed: () => _launchURL(context, source!),
-              child: Icon(Icons.language),
+              heroTag: 'speak',
+              onPressed: _speak,
               backgroundColor: isDark ? Colors.blueGrey[700] : Colors.blue,
+              child: Icon(Icons.volume_up_outlined),
             ),
           SizedBox(height: 8),
 
@@ -253,14 +276,10 @@ class DetailNews extends StatelessWidget {
   }
 
   void _shareArticle() {
-    String shareText = '$title\n\n$content';
+    String shareText = '${widget.title}\n\n${widget.content}';
 
-    if (url != null && url!.isNotEmpty) {
-      shareText += '\n\nShort link: $url';
-    }
-
-    if (source != null && source!.isNotEmpty) {
-      shareText += '\n\nSource: $source';
+    if (widget.source != null && widget.source!.isNotEmpty) {
+      shareText += '\n\nSource: ${widget.source}';
     }
 
     Share.share(shareText);
