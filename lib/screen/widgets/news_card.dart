@@ -264,7 +264,6 @@ class ModernNewsCard extends StatelessWidget {
     } catch (e) {
     }
     
-
     try {
       return DateTime.parse(dateStr);
     } catch (e) {

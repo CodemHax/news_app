@@ -35,7 +35,6 @@ class DetailNews extends StatefulWidget {
 class _DetailNewsState extends State<DetailNews> {
   final FlutterTts flutterTts = FlutterTts();
 
-
   Future<void> _speak() async {
     String text = widget.content;
     if (text.isNotEmpty) {
@@ -45,11 +44,13 @@ class _DetailNewsState extends State<DetailNews> {
       await flutterTts.speak(text);
     }
   }
+
   @override
   void dispose() {
     flutterTts.stop();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);

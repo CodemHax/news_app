@@ -60,19 +60,14 @@ class NewsResponse {
   });
 
   factory NewsResponse.fromJson(Map<String, dynamic> json) {
-    List<NewsArticle> articles = [];
-    if (json['data'] != null) {
-      articles = List<NewsArticle>.from(
-        (json['data'] as List).map((article) => NewsArticle.fromJson(article)),
-      );
-    }
-
     return NewsResponse(
       success: json['success'] ?? false,
       category: json['category'],
-      data: articles,
+      data: (json['data'] as List?)
+          ?.map((article) => NewsArticle.fromJson(article))
+          .toList() ?? [],
       error: json['error'],
-      totalArticles: json['total_articles'] ?? 0,
+      totalArticles: json['totalArticles'] ?? 0,
       timestamp: json['timestamp'],
     );
   }

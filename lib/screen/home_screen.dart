@@ -308,7 +308,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     return text.substring(0, 1).toUpperCase() + text.substring(1);
   }
 
-
   IconData _getCategoryIcon(String category) {
     switch (category.toLowerCase()) {
       case 'trending': return Icons.trending_up;

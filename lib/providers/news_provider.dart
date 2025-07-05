@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../fetch//get_news.dart' as Ferc;
+import '../fetch//get_news.dart' as fetch;
 import '../models/news_model.dart';
 
 class NewsProvider extends ChangeNotifier {
@@ -51,7 +51,7 @@ class NewsProvider extends ChangeNotifier {
 
   Future<void> loadCategories() async {
     try {
-      final categoriesResponse = await Ferc.fetchCategories();
+      final categoriesResponse = await fetch.fetchCategories();
       List<String> fetchedCategories = categoriesResponse;
       
       fetchedCategories.removeWhere((cat) => cat.toLowerCase() == 'all');
@@ -67,7 +67,6 @@ class NewsProvider extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print('Error loading categories: $e');
       _categories = [
         'trending', 'business', 'sports', 'technology',
         'entertainment', 'science', 'politics', 'world'
@@ -90,9 +89,9 @@ class NewsProvider extends ChangeNotifier {
     try {
       List<Map<String, dynamic>> newsData;
       if (category == 'trending') {
-        newsData = await Ferc.fetchTrendingNews();
+        newsData = await fetch.fetchTrendingNews();
       } else {
-        newsData = await Ferc.fetchNewsByCategory(category);
+        newsData = await fetch.fetchNewsByCategory(category);
       }
       if (newsData.isEmpty) {
         _handleError('No articles found for $category');
@@ -119,7 +118,7 @@ class NewsProvider extends ChangeNotifier {
     _searchQuery = query;
 
     try {
-      final searchResults = await Ferc.searchNews(query);
+      final searchResults = await fetch.searchNews(query);
       _articles = searchResults.map((article) => NewsArticle.fromJson(article)).toList();
       _isLoading = false;
       notifyListeners();
@@ -156,6 +155,17 @@ class NewsProvider extends ChangeNotifier {
   void setSelectedCategory(String category) {
     if (category != _selectedCategory) {
       loadNews(category);
+    }
+  }
+
+  Future<void> getApiStats() async {
+    try {
+      final stats = await fetch.getApiStatus();
+      _apiStats = stats;
+      notifyListeners();
+    } catch (e) {
+      _apiStats = {'error': 'Could not fetch API stats'};
+      notifyListeners();
     }
   }
 }

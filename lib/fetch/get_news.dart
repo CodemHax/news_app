@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
-import 'dart:math';
 import 'package:http/http.dart' as http;
 
 const String apiBaseUrl = 'https://newsapi.archax.site';
@@ -16,7 +15,7 @@ Future<List<Map<String, dynamic>>> fetchTrendingNews({int maxLimit = 100}) async
         'User-Agent': 'NewsApp/1.0',
         'Accept': 'application/json',
       },
-    ).timeout(const Duration(seconds: 15));
+    ).timeout(const Duration(seconds: 30));
 
     if (response.statusCode == 200) {
       try {
@@ -199,11 +198,9 @@ Future<List<Map<String, dynamic>>> searchNews(String query, {int maxLimit = 40})
     throw Exception('Search query cannot be empty');
   }
 
-  final encodedQuery = Uri.encodeComponent(query.trim());
-  final url = Uri.parse('$apiBaseUrl/search?query=$encodedQuery&max_limit=$maxLimit');
+  final url = Uri.parse('$apiBaseUrl/search?q=${Uri.encodeComponent(query)}&max_limit=$maxLimit');
 
   try {
-    print('DEBUG: Searching with URL: $url');
     final response = await http.get(
       url,
       headers: {
@@ -212,33 +209,46 @@ Future<List<Map<String, dynamic>>> searchNews(String query, {int maxLimit = 40})
       },
     ).timeout(const Duration(seconds: 15));
 
-    print('DEBUG: Search response status: ${response.statusCode}');
-    // Print the first part of response body for debugging
-    if (response.body.isNotEmpty) {
-      final previewLength = min(200, response.body.length);
-      print('DEBUG: Response preview: ${response.body.substring(0, previewLength)}...');
-    }
-
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = jsonDecode(response.body);
       if (data['success'] == true && data['data'] != null) {
         return List<Map<String, dynamic>>.from(data['data']);
       } else {
-        throw Exception('No results found for: $query');
-      }
-    } else if (response.statusCode == 422) {
-      try {
-        final Map<String, dynamic> errorData = jsonDecode(response.body);
-        final errorMessage = errorData['message'] ?? errorData['error'] ?? 'Search validation failed';
-        throw Exception(errorMessage);
-      } catch (e) {
-        throw Exception('Invalid search query. Try a different search term.');
+        throw Exception('Search failed: ${data['error'] ?? 'No results found'}');
       }
     } else {
-      throw Exception('Failed to search news: HTTP ${response.statusCode}');
+      throw Exception('Search failed: HTTP ${response.statusCode}');
     }
   } catch (e) {
-    print('DEBUG: Search error: $e');
-    throw Exception('Search error: $e');
+    if (e is SocketException) {
+      throw Exception('Network error: Please check your internet connection');
+    } else if (e is TimeoutException) {
+      throw Exception('Connection timeout: Server took too long to respond');
+    } else {
+      throw Exception('Search error: $e');
+    }
+  }
+}
+
+Future<Map<String, dynamic>> getApiStatus() async {
+  final url = Uri.parse('$apiBaseUrl/status');
+
+  try {
+    final response = await http.get(
+      url,
+      headers: {
+        'User-Agent': 'NewsApp/1.0',
+        'Accept': 'application/json',
+      },
+    ).timeout(const Duration(seconds: 10));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return data;
+    } else {
+      throw Exception('Failed to get API status: HTTP ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('API status error: $e');
   }
 }
